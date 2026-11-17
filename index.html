@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>글자로 피어난 크리스마스</title>
+<style>
+:root{color-scheme:dark;--gold:#d8c18d;--muted:#81938e}*{box-sizing:border-box}body{margin:0;background:#050d10;color:#e4eee7;font-family:Arial,'Malgun Gothic',sans-serif;overflow:hidden}canvas{display:block;width:100%;height:100dvh;touch-action:none}header{position:absolute;top:32px;left:40px;pointer-events:none}.eyebrow{color:var(--gold);font-size:10px;letter-spacing:4px}h1{font-size:17px;font-weight:400;letter-spacing:1px;margin-top:12px}header p{color:var(--muted);font-size:11px;letter-spacing:1px}.corner{position:absolute;right:38px;top:34px;color:#8caaa0;font:10px monospace;letter-spacing:2px}.caption{position:absolute;bottom:90px;left:20px;right:20px;text-align:center;pointer-events:none}.caption h2{font-family:Georgia,serif;font-size:clamp(25px,4vw,43px);font-weight:400;font-style:italic;letter-spacing:2px;margin:0 0 12px;color:#eee4cb}.caption p{font-size:11px;letter-spacing:3px;color:#91a89b}.toolbar{position:absolute;bottom:25px;left:50%;transform:translateX(-50%);display:flex;gap:6px;white-space:nowrap;background:#10201dcc;border:1px solid #ffffff12;padding:6px;border-radius:30px;backdrop-filter:blur(14px)}button{font:11px Arial,'Malgun Gothic',sans-serif;cursor:pointer;border:0;border-radius:20px;background:transparent;color:#c3d2ca;padding:10px 15px}button:hover,button[aria-pressed=true]{background:#ffffff14;color:#fff}button:focus-visible,input:focus-visible{outline:2px solid var(--gold)}.panel{position:absolute;right:25px;bottom:88px;width:280px;max-width:calc(100vw - 40px);padding:23px;background:#0d1d1cf5;border:1px solid #afc9b42a;border-radius:15px;box-shadow:0 20px 70px #0008}.panel[hidden]{display:none}.panel h3{font-size:15px;font-weight:400;margin:0 0 22px;color:var(--gold)}label{display:block;font-size:11px;color:#a2b6a9;margin:15px 0 8px}input[type=text]{width:100%;padding:11px;border:1px solid #ffffff20;border-radius:6px;background:#06110e;color:white}input[type=range]{width:100%;accent-color:#b4d5b2}.swatches{display:flex;gap:12px}.swatches button{width:26px;height:26px;padding:0;border:3px solid #132522;outline:1px solid transparent}.swatches button[aria-pressed=true]{outline-color:#fff}.hint{position:absolute;left:38px;bottom:32px;color:#61756c;font:10px monospace}.status{position:absolute;right:38px;bottom:35px;font:10px monospace;color:#768e7e}.status:before{content:'';display:inline-block;background:#a8cd9b;width:5px;height:5px;border-radius:50%;margin-right:8px}@media(max-width:650px){header{top:23px;left:23px}header p{max-width:190px;line-height:1.8}.corner{right:23px;top:25px;font-size:9px}.hint,.status{display:none}.caption{bottom:104px}.toolbar{bottom:24px}button{padding:10px 12px}.caption p{font-size:10px;letter-spacing:1.5px}}
+
+.metrics{position:absolute;right:25px;top:65px;min-width:162px;padding:12px 14px;background:#071310dd;border:1px solid #b4d5b225;border-radius:9px;font:11px/1.9 Consolas,monospace;pointer-events:none;color:#94ad9f}.metrics strong{color:#c9e5b6;font-size:20px}.metrics small{display:block;color:#6f8d7e;font-size:9px}.quality{display:flex;gap:4px}.quality button{padding:8px 12px;background:#ffffff08}.panel{max-height:calc(100dvh - 120px);overflow:auto}@media(max-width:650px){.metrics{top:92px;right:16px;font-size:10px;min-width:135px;padding:8px 10px}.metrics strong{font-size:17px}}
+.decor-options{display:flex;gap:8px;flex-wrap:wrap}.decor-options button{background:#ffffff08;border:1px solid #ffffff18}.decor-options button[aria-pressed=true]{background:#b4d5b225;border-color:#b4d5b280}.tabs{display:flex;gap:3px;margin-bottom:20px;border-bottom:1px solid #ffffff20;padding-bottom:8px}.tabs button{padding:9px 10px;flex:1}.tabs [aria-selected=true]{background:#b4d5b228;color:#fff}.setting-note{font-size:11px;color:#91a89b;line-height:1.8}[role=tabpanel][hidden]{display:none}</style>
+</head>
+<body>
+<canvas id="scene" aria-label="반짝이는 글자로 이루어진 입체 크리스마스트리. 드래그하면 회전합니다." role="img"></canvas>
+<header><div class="eyebrow">A LITTLE CHRISTMAS MAGIC</div><h1>글자로 피어난 크리스마스</h1><p>작은 글자에 담은, 따뜻한 겨울의 마음.</p></header>
+<div class="metrics" id="metrics"><strong id="fps">—</strong> FPS<br><span id="frameMs">프레임 측정 중</span><br><span id="renderMs">렌더 측정 중</span><small id="renderInfo"></small></div><div class="corner">DECEMBER · 25</div>
+<div class="caption"><h2 id="greeting">Merry Christmas</h2><p id="subline">당신의 겨울에 작은 빛이 되어줄게요</p></div>
+<div class="hint">ASCII GRID · DRAG TO TURN</div><div class="status" id="status">LIVE / A WINTER WISH</div>
+<nav class="toolbar" aria-label="트리 설정"><button id="play" aria-pressed="false">Ⅱ 멈추기</button><button id="snow" aria-pressed="true">눈 내림</button><button id="edit" aria-expanded="false" aria-controls="panel">꾸미기 설정</button><button id="save">사진 저장</button></nav>
+<section class="panel" id="panel" hidden><h3>나만의 크리스마스</h3><div class="tabs" role="tablist" aria-label="장식 설정"><button id="tab-tree" role="tab" data-tab="tree" aria-selected="true" aria-controls="settings-tree">트리</button><button id="tab-snowman" role="tab" data-tab="snowman" aria-selected="false" aria-controls="settings-snowman">눈사람</button><button id="tab-gifts" role="tab" data-tab="gifts" aria-selected="false" aria-controls="settings-gifts">선물 상자</button></div><div id="settings-tree" role="tabpanel" aria-labelledby="tab-tree"><label for="message">인사 문구</label><input id="message" type="text" value="Merry Christmas" maxlength="45"><label for="wish">작은 메시지</label><input id="wish" type="text" value="당신의 겨울에 작은 빛이 되어줄게요" maxlength="65"><label>트리 색상</label><div class="swatches"><button style="background:#80c69b" data-hue="145" aria-label="초록빛" aria-pressed="true"></button><button style="background:#e4c47b" data-hue="42" aria-label="금빛" aria-pressed="false"></button><button style="background:#95cbea" data-hue="197" aria-label="푸른빛" aria-pressed="false"></button><button style="background:#dfa0c6" data-hue="320" aria-label="분홍빛" aria-pressed="false"></button></div><label for="fontSize">트리 글자 크기 <output id="fontSizeValue" for="fontSize">10 px</output></label><input id="fontSize" type="range" min="6" max="22" step="1" value="10"><label for="speed">회전 속도</label><input id="speed" type="range" min="0" max="100" value="30"><label>렌더링 품질</label><div class="quality"><button data-quality="low">낮음</button><button data-quality="medium" aria-pressed="true">보통</button><button data-quality="high">높음</button></div></div><div id="settings-snowman" role="tabpanel" aria-labelledby="tab-snowman" hidden><label>눈사람 표시</label><button id="snowman" aria-pressed="true">눈사람 켜기 / 끄기</button><label for="snowmanSize">눈사람 크기</label><input id="snowmanSize" type="range" min="60" max="160" value="132"><p class="setting-note">트리와 같은 방향으로 함께 회전합니다.</p></div><div id="settings-gifts" role="tabpanel" aria-labelledby="tab-gifts" hidden><label>선물 상자 표시</label><button id="gifts" aria-pressed="true">선물 상자 켜기 / 끄기</button><label for="giftSize">선물 상자 크기</label><input id="giftSize" type="range" min="60" max="160" value="100"><p class="setting-note">리본이 달린 입체 상자 3개가 함께 회전합니다.</p></div></section>
+<script>
+'use strict';
+const canvas=document.getElementById('scene'),ctx=canvas.getContext('2d');
+const $=id=>document.getElementById(id);
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const CAMERA_PITCH=25*Math.PI/180,PC=Math.cos(CAMERA_PITCH),PS=Math.sin(CAMERA_PITCH);
+let W=0,H=0,DPR=1,angle=0,time=0,last=0,paused=reduce,snowOn=true,hue=145,speed=.3,dragging=false,previousX=0;
+let quality='medium',density=.75,atlas,atlasChars=[],background,backgroundCtx;
+let showGifts=true,showSnowman=true,snowmanScale=1.32,giftScale=1;
+let fontSize=10;
+let cols=0,rows=0,cellW=6,cellH=10,depthBuffer,charBuffer,colorBuffer,lightBuffer;const ramp='.,:;irsXA253hMHGS#9B&@';
+let fpsStart=0,fpsFrames=0,frameTotal=0,renderTotal=0;
+const glyphs=Array.from('.,:;irsXA253hMHGS#9B&@*+');let points=[],flakes=[],stars=[];
+// Fixed seed keeps the arrangement stable while it rotates.
+let seed=2512;function random(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;}
+function buildTree(){
+ points=[];seed=2512;
+ for(let row=0;row<180;row++){
+  const u=row/179,y=-1.42+u*2.64;
+  // Layered branches widen toward the ground.
+  const r=(.025+u*.94)*(1-.12*((u*8)%1)),count=Math.max(8,Math.floor(360*r));
+  for(let j=0;j<count;j++){
+   const a=j/count*Math.PI*2+row*.26,ornament=random()<.065;
+   const branchRadius=r*(1+.055*Math.cos(a*7+u*13)+.025*Math.sin(a*11-u*9));
+   points.push({x:Math.cos(a)*branchRadius,y:y+(random()-.5)*.018,z:Math.sin(a)*branchRadius,g:Math.floor(random()*800),light:random(),ornament,kind:'leaf'});
+  }
+ }
+ for(let row=0;row<14;row++)for(let j=0;j<12;j++){const a=j/12*Math.PI*2;points.push({x:Math.cos(a)*.085,y:1.23+row*.016,z:Math.sin(a)*.085,g:j+row,light:.5,kind:'trunk'});}
+ // A text garland spirals around the foliage.
+ for(let j=0;j<540;j++){let u=j/540,a=u*Math.PI*2*5.3,r=.04+u*.95;points.push({x:Math.cos(a)*r,y:-1.42+u*2.64,z:Math.sin(a)*r,g:j,light:random(),kind:'ribbon'});}
+}
+function resize(){W=innerWidth;H=innerHeight;DPR=Math.min(devicePixelRatio||1,quality==='high'?2:quality==='low'?1:1.5);canvas.width=Math.round(W*DPR);canvas.height=Math.round(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);seed=1225;flakes=Array.from({length:Math.min(180,Math.floor(W*H/6500))},()=>({x:random()*W,y:random()*H,size:.6+random()*1.5,v:9+random()*25,phase:random()*6.28}));stars=Array.from({length:100},()=>({x:random()*W,y:random()*H*.82,a:random(),size:random()<.12?1.3:.5}));configureGrid();buildBackground();}
+function configureGrid(){cellH=fontSize;cellW=cellH*.6;
+ cols=Math.ceil(W/cellW);rows=Math.ceil(H/cellH);const cells=cols*rows;
+ depthBuffer=new Float32Array(cells);charBuffer=new Uint8Array(cells);colorBuffer=new Uint8Array(cells);lightBuffer=new Uint8Array(cells);
+ }
+function project(x,y,z,scale,cx,cy){const c=Math.cos(angle),s=Math.sin(angle),rx=x*c+z*s,rz=-x*s+z*c;const tiltedY=y*PC+rz*PS,depth=rz*PC-y*PS,p=4.8/(4.8-depth);return{x:cx+rx*scale*p,y:cy+tiltedY*scale*p,z:depth,p};}
+// Rasterize each character once. Animation uses cached bitmap tiles.
+function buildAtlas(){
+ atlasChars=Array.from(new Set([...glyphs,'*','+']));atlas=document.createElement('canvas');
+ const tile=32;atlas.width=atlasChars.length*tile;atlas.height=11*8*tile;
+ const a=atlas.getContext('2d');a.font='20px Consolas, monospace';a.textAlign='center';a.textBaseline='middle';
+ for(let kind=0;kind<11;kind++)for(let level=0;level<8;level++){
+  const light=level/7;a.fillStyle=kind===0?`hsl(${hue},${48+light*22}%,${43+light*39}%)`:kind===1?`hsl(43,90%,${62+light*28}%)`:kind===2?'#c6a273':kind===3?'#fff0a4':kind===4?'#ff8c9e':kind===5?'#8ae7ff':kind===6?'#e2a6ff':kind===7?`hsl(195,30%,${70+light*27}%)`:kind===8?`hsl(220,12%,${13+light*17}%)`:kind===9?'#ff9a42':`hsl(353,80%,${38+light*18}%)`;
+  for(let g=0;g<atlasChars.length;g++)a.fillText(atlasChars[g],g*tile+16,(kind*8+level)*tile+16);
+ }
+}
+// Rasterize geometry into a fixed character grid with a depth buffer.
+// Glyph positions and sizes never move: only the character and its shade change.
+function putCell(x,y,z,ch,color,level){
+ if(x<0||x>=cols||y<0||y>=rows)return;
+ const i=y*cols+x;if(z<=depthBuffer[i])return;
+ depthBuffer[i]=z;charBuffer[i]=ch+1;colorBuffer[i]=color;lightBuffer[i]=level;
+}
+// All decorations are sampled surfaces in the same rotating world as the tree.
+function buildProps(){
+ points=points.filter(p=>!p.prop);
+ let serial=0;
+ function add(prop,x,y,z,nx,ny,nz,color,glyph){points.push({prop,x,y,z,nx,ny,nz,color,glyph,g:serial++,light:.8,kind:'prop'});}
+ const snowX=1.12,snowZ=.12,ground=1.46;
+ function snowPoint(x,y,z,nx,ny,nz,color,glyph){add('snowman',snowX+x*snowmanScale,ground+y*snowmanScale,snowZ+z*snowmanScale,nx,ny,nz,color,glyph);}
+ function sphere(cx,cy,cz,r,color){
+  const segments=r<.04?12:48,rings=r<.04?8:24;
+  for(let v=0;v<=rings;v++){const phi=v/rings*Math.PI;for(let u=0;u<segments;u++){const a=u/segments*Math.PI*2,nx=Math.sin(phi)*Math.cos(a),ny=Math.cos(phi),nz=Math.sin(phi)*Math.sin(a);snowPoint(cx+r*nx,cy+r*ny,cz+r*nz,nx,ny,nz,color);}}
+ }
+ sphere(0,-.25,0,.25,7);sphere(0,-.61,0,.20,7);sphere(0,-.92,0,.155,7);
+ // Coal eyes and buttons sit on the forward surface.
+ for(const x of [-.057,.057])sphere(x,-.96,.143,.0115,8);
+ for(const y of [-.67,-.57,-.47])sphere(0,y,.20,.023,8);
+ for(let j=0;j<5;j++){const a=(j/4)*Math.PI;const x=-Math.cos(a)*.078,y=-.89+Math.sin(a)*.045;const z=Math.sqrt(Math.max(0,.155*.155-x*x-(y+.92)*(y+.92)))+.008;sphere(x,y,z,.009,8);}
+ // Carrot cone and scarf, with depth shared by the whole scene.
+ for(let j=0;j<14;j++)for(let u=0;u<18;u++){let a=u/18*Math.PI*2,r=.032*(1-j/14);snowPoint(Math.cos(a)*r,-.916+Math.sin(a)*r,.15+j*.008,Math.cos(a),Math.sin(a),.5,9,21);}
+ for(let v=0;v<6;v++)for(let u=0;u<70;u++){let a=u/70*Math.PI*2;snowPoint(Math.cos(a)*.16,-.80+v*.01,Math.sin(a)*.16,Math.cos(a),0,Math.sin(a),10);}
+ for(let v=0;v<60;v++)for(let u=0;u<9;u++){const t=v/59;snowPoint(.11+u*.009+Math.sin(t*2.8)*.045,-.76+t*.68,.20+Math.sin(t*3.14)*.035,0,0,1,10);}
+ for(let strand=0;strand<7;strand++)for(let j=0;j<9;j++)snowPoint(.13+strand*.014+j*.002,-.08+j*.008,.20,0,0,1,10);
+ // Hat cylinder with brim and top disk.
+ for(let v=0;v<15;v++)for(let u=0;u<72;u++){const a=u/72*Math.PI*2;snowPoint(Math.cos(a)*.10,-1.155+v*.0075,Math.sin(a)*.10,Math.cos(a),0,Math.sin(a),v>10?10:8);}
+ for(let v=0;v<12;v++)for(let u=0;u<72;u++){const a=u/72*Math.PI*2,r=v/11*.152;snowPoint(Math.cos(a)*r,-1.045,Math.sin(a)*r,0,-1,0,8);if(r<=.10)snowPoint(Math.cos(a)*r,-1.155,Math.sin(a)*r,0,-1,0,8);}
+ 
+ function box(cx,cz,w,height,color){
+  const bottom=1.45,ww=w*giftScale,hh=height*giftScale;
+  for(let face=0;face<5;face++)for(let v=0;v<=22;v++)for(let u=0;u<=22;u++){
+   const a=u/22-.5,b=v/22-.5;let x,z,y,nx=0,ny=0,nz=0;
+   if(face===0){x=a*ww;z=ww/2;y=(b-.5)*hh;nz=1;}
+   else if(face===1){x=a*ww;z=-ww/2;y=(b-.5)*hh;nz=-1;}
+   else if(face===2){x=ww/2;z=a*ww;y=(b-.5)*hh;nx=1;}
+   else if(face===3){x=-ww/2;z=a*ww;y=(b-.5)*hh;nx=-1;}
+   else{x=a*ww;z=b*ww;y=-hh;ny=-1;}
+   const ribbon=Math.abs(a)<.065||(face===4?Math.abs(b)<.065:Math.abs(b-.28)<.055);
+   add('gifts',cx+x,bottom+y,cz+z,nx,ny,nz,ribbon?1:color,ribbon?21:undefined);
+  }
+  for(let side of [-1,1])for(let u=0;u<60;u++){const a=u/60*Math.PI*2;add('gifts',cx+side*ww*.17+Math.cos(a)*ww*.17,bottom-hh-.025-Math.sin(a)*ww*.09,cz+Math.sin(a)*ww*.1,0,-1,0,1,20);}
+ }
+ box(-1.15,.18,.40,.38,4);box(-.94,.67,.32,.27,6);box(-1.43,-.28,.28,.30,5);
+}
+function renderTree(scale,cx,cy){
+ depthBuffer.fill(-Infinity);charBuffer.fill(0);
+ const c=Math.cos(angle),s=Math.sin(angle);
+ for(const p of points){
+  if((p.prop==='snowman'&&!showSnowman)||(p.prop==='gifts'&&!showGifts))continue;
+  const rx=p.x*c+p.z*s,rz=-p.x*s+p.z*c,depth=rz*PC-p.y*PS,perspective=4.8/(4.8-depth);
+  const x=Math.floor((cx+rx*scale*perspective)/cellW),y=Math.floor((cy+(p.y*PC+rz*PS)*scale*perspective)/cellH);
+  const radius=Math.hypot(p.x,p.z)||1;
+  // Directional light changes the ASCII density as the surface turns.
+  const nx=rx/radius,nz=rz/radius;
+  let light=Math.max(0,Math.min(1,.40+Math.max(0,-nx*.38+nz*.72+.22)*.52+p.light*.12));
+  let index=Math.min(ramp.length-1,Math.floor(light*(ramp.length-1))),color=0;
+  if(p.kind==='ribbon'){color=1;index=Math.sin(time*2+p.g*.17)>.7?21:12+p.g%8;}
+  else if(p.kind==='trunk'){color=2;index=7+p.g%5;}
+  else if(p.ornament){color=3+p.g%4;index=Math.sin(time*2.4+p.g)>.35?21:20;}
+  if(p.kind==='leaf'&&!p.ornament&&((p.y+1.42)/2.64*8)%1<.055){color=1;index=18+p.g%3;}
+  if(p.prop){
+   const nx=p.nx*c+p.nz*s,nz=-p.nx*s+p.nz*c;
+   light=Math.max(.24,Math.min(1,.46+Math.max(0,-nx*.42-p.ny*.5+nz*.62)*.54));
+   color=p.color;index=p.glyph===undefined?Math.min(19,Math.floor(6+light*13)):p.glyph;
+  }
+  putCell(x,y,depth,index,color,Math.min(7,Math.floor(light*8)));
+ }
+ const top=project(0,-1.6,0,scale,cx,cy),sx=Math.floor(top.x/cellW),sy=Math.floor(top.y/cellH);
+ const star=['   *   ','   *   ','*******',' ***** ','  ***  ',' *   * '];
+ for(let y=0;y<star.length;y++)for(let x=0;x<star[y].length;x++)if(star[y][x]==='*')putCell(sx+x-3,sy+y-3,10,20,1,7);
+
+ ctx.globalAlpha=1;
+ for(let i=0;i<charBuffer.length;i++){
+  if(!charBuffer[i])continue;
+  ctx.drawImage(atlas,(charBuffer[i]-1)*32,(colorBuffer[i]*8+lightBuffer[i])*32,32,32,
+   (i%cols)*cellW-cellW*.45,Math.floor(i/cols)*cellH-cellH*.32,cellW*1.9,cellH*1.65);
+ }
+}
+function buildBackground(){background=document.createElement('canvas');background.width=canvas.width;background.height=canvas.height;const b=background.getContext('2d');b.setTransform(DPR,0,0,DPR,0,0);
+ b.clearRect(0,0,W,H);b.fillStyle='#050d10';b.fillRect(0,0,W,H);
+ const glow=b.createRadialGradient(W/2,H*.47,0,W/2,H*.47,Math.max(W,H)*.58);glow.addColorStop(0,'#15302955');glow.addColorStop(1,'#050d1000');b.fillStyle=glow;b.fillRect(0,0,W,H);
+ for(const s of stars){b.globalAlpha=.18+s.a*.3+.1*Math.sin(s.x);b.fillStyle='#d6e4da';b.fillRect(s.x,s.y,s.size,s.size);}b.globalAlpha=1;
+ const scale=Math.min(W*.31,H*.215,220),cx=W/2,cy=H*.46;
+ b.save();b.translate(cx,cy+scale*1.5);b.scale(1,.22);const ground=b.createRadialGradient(0,0,0,0,0,scale*1.6);ground.addColorStop(0,'#6eaa8130');ground.addColorStop(1,'#6eaa8100');b.fillStyle=ground;b.beginPath();b.arc(0,0,scale*1.6,0,Math.PI*2);b.fill();
+ b.font='9px monospace';b.textAlign='center';for(let i=0;i<9;i++){b.fillStyle=`rgba(115,155,134,${.13-i*.009})`;for(let j=0;j<65;j++){let a=j/65*Math.PI*2;b.fillText('·',Math.cos(a)*(scale*.5+i*scale*.12),Math.sin(a)*(scale*.5+i*scale*.12));}}b.restore();
+}
+function draw(dt){
+ ctx.drawImage(background,0,0,W,H);
+ const scale=Math.min(W*.31,H*.215,220),cx=W/2,cy=H*.46;
+ renderTree(scale,cx,cy);
+ if(snowOn){ctx.textAlign='center';for(const f of flakes){if(!paused){f.y+=dt*f.v;f.x+=Math.sin(time*.5+f.phase)*dt*5;if(f.y>H+8){f.y=-8;}if(f.x>W+8)f.x=-8;if(f.x< -8)f.x=W+8;}ctx.fillStyle=`rgba(221,236,232,${.2+f.size*.17})`;ctx.font=`${f.size*5}px monospace`;ctx.fillText(f.size>1.8?'+':'.',Math.floor(f.x/cellW)*cellW,Math.floor(f.y/cellH)*cellH);}}
+}
+function frame(now){
+ const interval=last?now-last:0;last=now;const dt=Math.min(interval/1000,.1);
+ if(!paused){time+=dt;if(!dragging)angle-=dt*speed*.55;}
+ const begin=performance.now();draw(dt);const cost=performance.now()-begin;
+ if(interval>0&&interval<1000){fpsFrames++;frameTotal+=interval;renderTotal+=cost;}
+ if(!fpsStart)fpsStart=now;
+ if(now-fpsStart>=500&&fpsFrames){
+  const fps=1000*fpsFrames/frameTotal;$('fps').textContent=fps.toFixed(1);
+  $('fps').style.color=fps>=55?'#c9e5b6':fps>=30?'#ecd28a':'#eea08d';
+  $('frameMs').textContent=`${(frameTotal/fpsFrames).toFixed(1)} ms / frame`;
+  $('renderMs').textContent=`${(renderTotal/fpsFrames).toFixed(1)} ms / render`;
+  $('renderInfo').textContent=`${cols} × ${rows} ASCII · DPR ${DPR}`;
+  fpsFrames=0;frameTotal=0;renderTotal=0;fpsStart=now;
+ }
+ requestAnimationFrame(frame);
+}
+document.addEventListener('visibilitychange',()=>{last=0;fpsStart=0;fpsFrames=0;frameTotal=0;renderTotal=0;});
+function setPlay(){ $('play').textContent=paused?'▷ 재생':'Ⅱ 멈추기';$('play').setAttribute('aria-pressed',String(paused));$('status').textContent=paused?'PAUSED / A WINTER WISH':'LIVE / A WINTER WISH';}
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(t=>{const selected=t===b;t.setAttribute('aria-selected',String(selected));$('settings-'+t.dataset.tab).hidden=!selected;});});
+$('snowmanSize').oninput=e=>{snowmanScale=Number(e.target.value)/100;buildProps();};
+$('giftSize').oninput=e=>{giftScale=Number(e.target.value)/100;buildProps();};
+$('gifts').onclick=()=>{showGifts=!showGifts;$('gifts').setAttribute('aria-pressed',String(showGifts));};
+$('snowman').onclick=()=>{showSnowman=!showSnowman;$('snowman').setAttribute('aria-pressed',String(showSnowman));};
+$('play').onclick=()=>{paused=!paused;setPlay();};$('snow').onclick=()=>{snowOn=!snowOn;$('snow').setAttribute('aria-pressed',String(snowOn));};$('edit').onclick=()=>{const open=$('panel').hidden;$('panel').hidden=!open;$('edit').setAttribute('aria-expanded',String(open));};
+$('message').oninput=e=>$('greeting').textContent=e.target.value;$('wish').oninput=e=>$('subline').textContent=e.target.value;$('speed').oninput=e=>speed=Number(e.target.value)/100;
+$('fontSize').oninput=e=>{fontSize=Number(e.target.value);$('fontSizeValue').textContent=fontSize+' px';configureGrid();};
+document.querySelectorAll('[data-hue]').forEach(b=>b.onclick=()=>{hue=Number(b.dataset.hue);buildAtlas();document.querySelectorAll('[data-hue]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));});
+canvas.onpointerdown=e=>{dragging=true;previousX=e.clientX;canvas.setPointerCapture(e.pointerId);};canvas.onpointermove=e=>{if(dragging){angle+=(e.clientX-previousX)*.009;previousX=e.clientX;}};canvas.onpointerup=canvas.onpointercancel=()=>dragging=false;
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('panel').hidden=true;$('edit').setAttribute('aria-expanded','false');}});
+$('save').onclick=()=>{draw(0);const out=document.createElement('canvas');out.width=canvas.width;out.height=canvas.height;const c=out.getContext('2d');c.drawImage(canvas,0,0);c.scale(DPR,DPR);c.textAlign='center';c.fillStyle='#eee4cb';c.font=`italic ${Math.min(43,W*.06)}px Georgia`;c.fillText($('message').value,W/2,H-105,W-40);c.fillStyle='#a6bbae';c.font='12px sans-serif';c.fillText($('wish').value,W/2,H-72,W-40);out.toBlob(blob=>{if(!blob)return;const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='my-christmas-tree.png';a.click();setTimeout(()=>URL.revokeObjectURL(u),3000);},'image/png');};
+document.querySelectorAll('[data-quality]').forEach(b=>b.onclick=()=>{quality=b.dataset.quality;density=quality==='low'?.5:quality==='high'?1:.75;buildTree();buildProps();buildAtlas();resize();document.querySelectorAll('[data-quality]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));});
+window.addEventListener('resize',resize);buildTree();buildProps();buildAtlas();resize();setPlay();requestAnimationFrame(frame);
+</script>
+</body></html>
